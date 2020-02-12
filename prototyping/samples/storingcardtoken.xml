@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE SecurePayMessage SYSTEM "request.dtd">
+
+<!-- STORING A CARD AS A TOKEN -->
+<SecurePayMessage>
+
+    <MessageInfo>
+        <messageID>8af793f9af34bea0ecd7eff711c9d3</messageID>
+        <messageTimestamp>20110710015921142000+600</messageTimestamp>
+        <timeoutValue>60</timeoutValue>
+        <apiVersion>spxml-3.0</apiVersion>
+    </MessageInfo>
+
+    <MerchantInfo>
+        <merchantID>ABC00</merchantID>
+        <password>abc123</password>
+    </MerchantInfo>
+
+    <RequestType>addToken</RequestType>
+    <Token>
+        <TokenList count="1">
+            <TokenItem ID="1">
+                <cardNumber>4444333322221111</cardNumber>
+                <expiryDate>11/25</expiryDate>
+                <tokenType>1</tokenType>
+                <amount>1100</amount>
+                <transactionReference>MyCustomer</transactionReference>
+            </TokenItem>
+        </TokenList>
+    </Token>
+
+</SecurePayMessage>

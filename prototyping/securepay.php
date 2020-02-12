@@ -1,11 +1,40 @@
 <?php namespace securepay;
 
-use DOMXPath;
+    include "lib/helper.php";
 
-function xml_message(array $credentials) : \DOMDocument
+    
+    // Declaring static variables
+    $XML_BASE = <<<XML
+    <?xml version="1.0" encoding="UTF-8"?>
+    <SecurePayMessage>
+    
+        <!-- Identifies the message, mandatory -->
+        <MessageInfo>
+            <messageID></messageID>
+            <messageTimestamp></messageTimestamp>
+            <timeoutValue>60</timeoutValue>
+            <apiVersion>spxml-3.0</apiVersion>
+        </MessageInfo>
+        
+        <!-- The credentials for authentication, mandatory -->
+        <MerchantInfo>
+            <merchantID></merchantID>
+            <password></password>
+        </MerchantInfo>
+    
+        <!-- The request type, must be one of ["Periodic", "addToken", "lookupToken", "Echo"] -->
+        <RequestType></RequestType>
+    
+    </SecurePayMessage>
+    XML;
+
+
+
+    function xml_message(array $credentials, string $requestType) : \DOMDocument
     {
         // Validating input
-        utils\validate_keys(["merchantID", "password"], $credentials, "Invalid credentials.");
+        \helper\validate_keys(["merchantID", "password"], $credentials, "Invalid credentials.");
+        \helper\validate_string($requestType, ["Periodic", "addToken", "lookupToken", "Echo"], "Invalid request type");
 
         // Getting generated values
         $messageID          = message\get_id();
@@ -39,25 +68,21 @@ function xml_message(array $credentials) : \DOMDocument
             </MerchantInfo>
         
             <!-- The request type, must be one of ["Periodic", "addToken", "lookupToken", "Echo"] -->
-            <RequestType></RequestType>
-        
-            <!-- Contains information about financial transactions to be processed -->
-            <Periodic>
-            </Periodic>
+            <RequestType>$requestType</RequestType>
         
         </SecurePayMessage>
         XML);
 
         
         // Removing all comment nodes as they're there purely for developers
-        $xpath = new DOMXPath($doc);                // Getting xpath for finding nodes
+        $xpath = new \DOMXPath($doc);               // Getting xpath for finding nodes
         $comments = $xpath->query("comment()");     // Querying for all comments
 
         foreach($comments as $node) {               // For each comment
             $node->parentNode->removeChild($node);  // Remove 
         }
-        
 
+        // Returning the document 
         return $doc;
     }
 
@@ -66,14 +91,6 @@ function xml_message(array $credentials) : \DOMDocument
 
 
 <?php namespace securepay\message;
-
-    /**
-     * 
-     */
-    function add_transaction()
-    {
-
-    }
 
 
     /**
@@ -108,28 +125,6 @@ function xml_message(array $credentials) : \DOMDocument
 
         // Imploding array and returning timestamp string with correct formatting
         return implode($format);
-    }
-
-?>
-
-
-<?php namespace securepay\utils;
-
-    /**
-     * Dynamically checks if given object contains keys held in a given list of keys
-     */
-    function validate_keys(array $keys, array $obj, string $error) : bool
-    {
-        // Loop through each key in the list
-        foreach($keys as $key) {
-            if(!key_exists($key, $obj)) {   // Validate the key
-                throw new \Exception("Error! "
-                . $error . "\nArray must contain key, '" . strval($key) . "'.");
-            }
-        }
-
-        // Returns true if everything passes
-        return true;
     }
 
 ?>

@@ -11,8 +11,8 @@
 
 
     // Getting the xml base document
-    $doc = (\securepay\xml_message($credentials));
+    $message = (\securepay\xml_message($credentials, "addToken"));
 
-    // \securepay\utils\strip_xml($doc);
-    print_r($doc->saveXML());
+    // Printing the doc to screen
+    print_r($message->saveXML());
 ?>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<SecurePayMessage>
+
+    <MessageInfo>
+        <messageID>8af793f9af34bea0ecd7eff71c94d6</messageID>
+        <messageTimestamp>20040710050758444000+600</messageTimestamp>
+        <timeoutValue>60</timeoutValue>
+        <apiVersion>spxml-3.0</apiVersion>
+    </MessageInfo>
+
+    <MerchantInfo>
+        <merchantID>ABC0001</merchantID>
+        <password>abc123</password>
+    </MerchantInfo>
+
+    <RequestType>Periodic</RequestType>
+    <Periodic>
+        <PeriodicList count="1">
+            <PeriodicItem ID="1">
+                <actionType>trigger</actionType>
+                <transactionReference>Payment Reference</transactionReference>
+                <clientID>test3</clientID>
+                <amount>1400</amount>
+            </PeriodicItem>
+        </PeriodicList>
+    </Periodic>
+    
+</SecurePayMessage>

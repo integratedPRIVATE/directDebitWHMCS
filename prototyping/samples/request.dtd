@@ -1,0 +1,61 @@
+<!-- Stores the entire message, must be root -->
+<!ELEMENT SecurePayMessage (MessageInfo, MerchantInfo, RequestType, Periodic?, Token?)>
+
+<!ELEMENT MessageInfo (messageID, messageTimestamp, timeoutValue, apiVersion)>
+<!ELEMENT messageID (#PCDATA)>
+<!ELEMENT messageTimestamp (#PCDATA)>
+<!ELEMENT timeoutValue (#PCDATA)>
+<!ELEMENT apiVersion (#PCDATA)>
+
+<!ELEMENT MerchantInfo (merchantID, password)>
+<!ELEMENT merchantID (#PCDATA)>
+<!ELEMENT password (#PCDATA)>
+
+<!ELEMENT RequestType (#PCDATA)>
+
+<!ELEMENT Periodic (PeriodicList)>
+<!ELEMENT PeriodicList (PeriodicItem*)>
+<!ATTLIST PeriodicList count CDATA #REQUIRED>
+
+
+<!-- define elements for PeriodicList -->
+<!ELEMENT PeriodicItem (actionType, clientID, CreditCardInfo?, DirectEntryInfo?, amount?, periodicType?, paymentInterval?, startDate?, numberOfPayments?)>
+<!ATTLIST PeriodicItem ID CDATA #REQUIRED>
+
+<!-- define elements for PeriodicItem -->
+<!ELEMENT actionType (#PCDATA)>
+<!ELEMENT clientID (#PCDATA)>
+<!ELEMENT CreditCardInfo (cardNumber, cvv?, expiryDate, recurringFlag?, transactionReference?)>
+<!ELEMENT DirectEntryInfo (bsbNumber, accountNumber, accountName, creditFlag?)>
+<!ELEMENT amount (#PCDATA)>
+<!ELEMENT currency (#PCDATA)>
+<!ELEMENT periodicType (#PCDATA)>
+<!ELEMENT paymentInterval (#PCDATA)>
+<!ELEMENT startDate (#PCDATA)>
+<!ELEMENT numberOfPayments (#PCDATA)>
+
+<!-- define elements for CreditCardInfo -->
+<!ELEMENT cardNumber (#PCDATA)>
+<!ELEMENT cvv (#PCDATA)>
+<!ELEMENT expiryDate (#PCDATA)>
+<!ELEMENT recurringFlag (#PCDATA)>
+<!ELEMENT transactionReference (#PCDATA)>
+
+<!-- define elements for DirectEntryInfo -->
+<!ELEMENT bsbNumber (#PCDATA)>
+<!ELEMENT accountNumber (#PCDATA)>
+<!ELEMENT accountName (#PCDATA)>
+<!ELEMENT creditFlag (#PCDATA)>
+
+<!-- define elements for Token-->
+<!ELEMENT Token (TokenList)>
+<!ATTLIST TokenItem ID NMTOKEN #REQUIRED>
+<!ELEMENT TokenList (TokenItem)>
+<!ATTLIST TokenList count NMTOKEN #REQUIRED>
+<!ELEMENT TokenItem (cardNumber?, expiryDate?, tokenType?, amount?, transactionReference?, tokenValue?)>
+<!ELEMENT amount (#PCDATA)>
+<!ELEMENT cardNumber (#PCDATA)>
+<!ELEMENT expiryDate (#PCDATA)>
+<!ELEMENT tokenType (#PCDATA)>
+<!ELEMENT tokenValue (#PCDATA)>
+<!ELEMENT transactionReference (#PCDATA)>
