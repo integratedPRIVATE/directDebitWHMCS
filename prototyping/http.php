@@ -1,17 +1,13 @@
 <?php namespace http\xml;
 
-    function post(string $url, array $request)
-    {
-        return __request__("POST", $url, $request);
-    }
-
+    function post(string $url, array $request) {
+        return __request__("POST", $url, $request); }
     
-    function get(string $url, array $request)
-    {
-        return __request__("GET", $url, $request);
-    }
+    function get(string $url, array $request) {
+        return __request__("GET", $url, $request); }
 
 
+        
     function __request__(string $type, string $url, array $request)
     {
         // Checking request type, declared as array to allow for adding extra types
@@ -65,8 +61,17 @@
         if($response === false) {
             $response = "CURL ERROR: " . curl_error($curl);
         }
+
+        // If it didn't then we parse the xml string
         else {
-            $response = simplexml_load_string($response);
+            // Create a DOM and set it's formatting properties
+            $dom = new \DOMDocument();
+            $dom->preserveWhiteSpace = false;
+            $dom->formatOutput = true;
+
+            // Parse the xml, then apply to response
+            $dom->loadXML($response);
+            $response = $dom;
         }
         
         // Closing the curl instance and returning the response

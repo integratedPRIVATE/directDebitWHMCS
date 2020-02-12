@@ -2,34 +2,10 @@
 
     include "lib/helper.php";
 
-    
-    // Declaring static variables
-    $XML_BASE = <<<XML
-    <?xml version="1.0" encoding="UTF-8"?>
-    <SecurePayMessage>
-    
-        <!-- Identifies the message, mandatory -->
-        <MessageInfo>
-            <messageID></messageID>
-            <messageTimestamp></messageTimestamp>
-            <timeoutValue>60</timeoutValue>
-            <apiVersion>spxml-3.0</apiVersion>
-        </MessageInfo>
-        
-        <!-- The credentials for authentication, mandatory -->
-        <MerchantInfo>
-            <merchantID></merchantID>
-            <password></password>
-        </MerchantInfo>
-    
-        <!-- The request type, must be one of ["Periodic", "addToken", "lookupToken", "Echo"] -->
-        <RequestType></RequestType>
-    
-    </SecurePayMessage>
-    XML;
 
-
-
+    /**
+     * Takes in credentials and the request type and generates the base xml document for a securepay request
+     */
     function xml_message(array $credentials, string $requestType) : \DOMDocument
     {
         // Validating input
@@ -77,9 +53,30 @@
         // Removing all comment nodes as they're there purely for developers
         $xpath = new \DOMXPath($doc);               // Getting xpath for finding nodes
         $comments = $xpath->query("comment()");     // Querying for all comments
-
         foreach($comments as $node) {               // For each comment
             $node->parentNode->removeChild($node);  // Remove 
+        }
+
+        
+        // Adding a Token, Periodic or Echo element based on request type
+        $message = $xpath->query("/SecurePayMessage")[0];
+        if($requestType == "Periodic") {
+            // Creating elements
+            $periodic       = $doc->createElement("Periodic");
+            $periodicList   = $doc->createElement("PeriodicList");
+
+            // Setting up tree
+            $periodic->appendChild($periodicList);
+            $message->appendChild($periodic);
+        }
+        elseif($requestType == "addToken" || $requestType == "lookupToken") {
+            // Creating elements
+            $token          = $doc->createElement("Token");
+            $tokenList      = $doc->createElement("TokenList");
+
+            // Setting up tree
+            $token->appendChild($tokenList);
+            $message->appendChild($token);
         }
 
         // Returning the document 
@@ -92,6 +89,33 @@
 
 <?php namespace securepay\message;
 
+    function add_tokenitem(\DOMDocument $doc, array $token_struct)
+    {
+        $valid_struct = ["cardNumber", "expiryDate", "tokenType", "amount", "transactionReference"];
+
+        // Validating input
+        \helper\validate_keys($valid_struct, $token_struct, "Invalid token struct");
+
+        // Getting the token list element
+        $xpath = new \DOMXPath($doc);                   // Getting xpath for finding nodes
+        $tokenlist = $xpath->query("/SecurePayMessage/Token/TokenList")[0];   
+
+        // Getting token list properties
+        $count = count($xpath->query("TokenItem", $tokenlist));
+
+        // Creating the token XML element and adding it to the list
+        $token = new \DOMElement("TokenItem");
+        $tokenlist->appendChild($token);
+
+        // Adding children elements based off struct
+        foreach($valid_struct as $item) {
+            $token->appendChild($doc->createElement($item, $token_struct[$item]));
+        }
+
+        // Setting the list and token properties
+        $tokenlist->setAttribute("count", $count+1);
+        $token->setAttribute("ID", $count+1);
+    }
 
     /**
      * Generates and returns a unique identifier for use in "messageID"
