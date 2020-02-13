@@ -5,11 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Execute run",
+            "name": "Launch prototyping",
             "type": "php",
             "request": "launch",
-            "program": "run.php",
-            "cwd": "${workspaceFolder}/",
+            "program": "${workspaceFolder}/prototyping/main.php",
+            "cwd": "${workspaceFolder}/prototyping",
             "port": 9000
         }
     ]
