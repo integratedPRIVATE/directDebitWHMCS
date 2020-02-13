@@ -1,3 +1,13 @@
 {
-    "intelephense.environment.documentRoot": "${workspaceFolder}/prototyping/"
+    "intelephense.environment.documentRoot": "${workspaceFolder}/",
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+
+        ".*": true,
+        "LICENSE": true
+    }
 }
