@@ -1,0 +1,7 @@
+{
+    "intelephense.environment.documentRoot": "${workspaceFolder}/",
+
+    "files.exclude": {
+        "LICENSE": true
+    }
+}
