@@ -12,19 +12,26 @@
 
 
     // Getting the xml base document
-    $message = (\securepay\xml_message($credentials, "addToken"));
+    $message = (\securepay\xml_message($credentials, "Periodic"));
 
-    // Adding a token item to the message
-    \securepay\message\add_tokenitem($message, [
-        "cardNumber"  => 4444333322221111,
-        "expiryDate" => "11/25",
-        "tokenType" => 1,
-        "amount" => 1100,
-        "transactionReference" => "MyCustomer"
-    ]);
+
+    // Add periodic item
+    \securepay\message\add_item($message, [
+        "actionType"        => "add",                   // We're adding a payor
+        "clientID"          => "RichardIntegrated1",    // Client reference, no spaces
+        "DirectEntryInfo"   => [                        // Bank account details
+            "bsbNumber"     => "123456",
+            "accountNumber" => "123456789",
+            "accountName"   => "John Smith"
+        ],
+        "amount"            => 1000,                    // 
+        "periodicType"      => 4
+
+    ], "Periodic");
+
 
     // Dispatch the message
-    $response = \http\xml\post($url_storage, [
+    $response = \http\xml\post($url_payment, [
         "headers" => [
             "host" => "test.securepay.com.au"
         ],
@@ -32,8 +39,10 @@
         "body"  => $message->saveXML()
     ]);
 
+    
 
-    // Print to screen for debugging
+    print_r($message->saveXML());
+    print_r("\n\n\n");
     print_r($response->saveXML());
 
 ?>

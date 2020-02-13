@@ -19,7 +19,7 @@
 
 
 <!-- define elements for PeriodicList -->
-<!ELEMENT PeriodicItem (actionType, clientID, CreditCardInfo?, DirectEntryInfo?, amount?, periodicType?, paymentInterval?, startDate?, numberOfPayments?)>
+<!ELEMENT PeriodicItem (actionType, clientID, transactionReference?, periodicType?, amount?, startDate?, numberOfPayments?, paymentInterval?, CreditCardInfo?, DirectEntryInfo?)>
 <!ATTLIST PeriodicItem ID CDATA #REQUIRED>
 
 <!-- define elements for PeriodicItem -->

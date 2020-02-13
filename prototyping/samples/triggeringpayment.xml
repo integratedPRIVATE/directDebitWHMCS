@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE SecurePayMessage SYSTEM "request.dtd">
+
+<!-- TRIGGERING A PAYMENT -->
 <SecurePayMessage>
 
     <MessageInfo>
