@@ -8,7 +8,7 @@
             "name": "Launch run",
             "type": "php",
             "request": "launch",
-            "program": "run.php",
+            "program": "${workspaceFolder}/run.php",
             "cwd": "${workspaceFolder}/",
             "port": 9000
         }
