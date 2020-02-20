@@ -8,10 +8,24 @@ $password       = "abc123";
 
 // Creating a request object
 $request = new \securepay\Request($merchantID, $password);
-print_r($request->message->saveXML());
-print_r("\n");
-print_r($request->response->saveXML());
 
+/*
+$request->add_payor("card", "boopity123", [
+    "cardNumber"    => 4444333322221111,
+    "cvv"           => 123,
+    "expiryDate"    => "08/23"
+]);
+*/
+
+$request->add_payor("bank", "boopity1234", [
+    "bsbNumber"     => "123456",
+    "accountNumber" => "123456789",
+    "accountName"   => "John Smith",
+]);
+
+
+print_r($request->message->saveXML() . "\n");
+print_r($request->response->saveXML() . "\n");
 
 /*
 
