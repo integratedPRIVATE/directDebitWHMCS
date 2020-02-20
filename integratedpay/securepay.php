@@ -1,6 +1,7 @@
 <?php namespace securepay;
 
 include "http.php";
+include "utils.php";
 
 /**
  * The Request class is used to send and get requests to the SecurePay servers  
@@ -14,6 +15,8 @@ class Request
     private $password       = "";                   // The password used to authenticate
     private $valid_data     = [                     // Describes a valid xml request, checked against
         "requestType"       => ["Periodic", "addToken", "lookupToken", "Echo"],
+        "bank"              => ["bsbNumber", "accountNumber", "accountName"],
+        "card"              => ["cardNumber", "cvv", "expiryDate"],
     ];
     private $map            = [                     // A map of element locations
         "messageID"         => "/SecurePayMessage/MessageInfo/messageID",
@@ -53,7 +56,7 @@ class Request
 
         // Executing startup functions
         $this->gen_message();
-        $this->ping();
+        // $this->ping();
     }
 
 
@@ -79,11 +82,84 @@ class Request
 
 
     /**
-     * 
+     * Adds a credit card or direct debit payor to SecurePay and stores it  
+     * @param string $type The payor type, one of ["card", "bank"]
+     * @param string $id The payor ID used to identify and trigger payments 
+     * @param array $data Either the credit card or bank information to be stored
+     * Returns true if succesful
      */
-    public function store_payor(string $type, array $data)
+    public function add_payor(string $type, string $id, array $data): bool
     {
+        // Validating inputs
+        if(!in_array($type, ["card", "bank"])) {
+            throw new \Exception(sprintf("Error, invalid payor type '%s', must be one of [%s].", 
+            $type, "'card', 'bank'"));
+        }
+        foreach($this->valid_data[$type] as $key) {
+            if(!key_exists($key, $data)) {
+                throw new \Exception(sprintf("Error, invalid %s data, cannot find '%s'", 
+                $type, $key));
+            }
+        }
+
+        // Creating Periodic Node
+        $periodic = \utils\parse_xml(   <<<XML
+        <Periodic>
+            <PeriodicList count="1">
+                <actionType>add</actionType>
+                <clientID>$id</clientID>
+                <periodicType>4</periodicType>
+            </PeriodicList>
+        </Periodic>
+        XML);
         
+        // Creating the payor payload
+        $payor = null;
+        if($type === "card") {                  // If we're adding a card
+            // Getting the properties
+            $cardNumber = $data["cardNumber"];
+            $cvv        = $data["cvv"];
+            $expiryDate = $data["expiryDate"];
+
+            // Creating XML payload
+            $payor =  \utils\parse_xml(   <<<XML
+            <CreditCardInfo ID="1" >
+                <cardNumber>$cardNumber</cardNumber>
+                <cvv>$cvv</cvv>
+                <expiryDate>$expiryDate</expiryDate>
+            </CreditCardInfo>
+            XML);
+        }
+        elseif($type == "bank") {               // If we're adding a bank
+            // Getting the properties
+            $bsbNumber      = $data["bsbNumber"];
+            $accountNumber  = $data["accountNumber"];
+            $accountName    = $data["accountName"];
+
+            // Creating XML payload
+            $payor = \utils\parse_xml(    <<<XML
+            <DirectEntryInfo ID="1" >
+                <bsbNumber>$bsbNumber</bsbNumber>
+                <accountNumber>$accountNumber</accountNumber>
+                <accountName>$accountName</accountName>
+            </DirectEntryInfo>
+            XML);
+        }
+
+        // Importin nodes
+        $xml = $this->message;
+        $node_periodic = $xml->importNode($periodic, true);
+        $node_payor = $xml->importNode($payor, true);
+
+        // Appending to message
+        $xml->firstChild->appendChild($node_periodic);
+        $node_periodic->firstChild->appendChild($node_payor);
+
+        // Posting payload
+        $this->set_requestType("Periodic");
+        $this->post();
+      
+        return true;
     }
 
 
@@ -137,9 +213,11 @@ class Request
             throw new \Exception("Error, Request not sent, curl error:\n" . $response);
         }
 
+        var_dump($response);
+
         // Setting response XML and validating
         $this->response->loadXML($response);
-        $this->validate_response();
+        // $this->validate_response();
     }
 
 

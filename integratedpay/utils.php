@@ -42,3 +42,20 @@ function validate_keys(array $object, array $valid_keys, bool $strict=false): ar
     // Return status true as all checks where passed
     return ["status" => true];
 }
+
+
+/**
+ * Takes in an XML string, parses it through DOMDocument and returns the first element
+ * @param string $xml The XML string to be parsed
+ */
+function parse_xml(string $xml): \DOMNode
+{
+    $doc = new \DOMDocument();                  // Create new DOM object
+    $doc->preserveWhiteSpace = false;           // Do not preserve white spacing
+    $doc->formatOutput = true;                  // Format output for display
+
+    $doc->loadXML($xml);                        // Parse the XML string
+    $node = $doc->firstChild;                   // Getting the first child
+
+    return $node;                               // Return the node
+}
