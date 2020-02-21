@@ -32,21 +32,41 @@ class SecurePay
      */
     public function store_directdebit(string $id, string $bsb, string $number, string $name, string $credit)
     {
-        $message = SecurePay::list_to_xml([
-            "MessageInfo"   => [
-                "messageID"         => "",
-                "messageTimestamp"  => "",
-                "timeoutValue"      => "60",
-                "apiVersion"        => "spxml-3.0",
+        // Creating core message
+        $message = new SecurePayMessage("Periodic", $this->merchantID, $this->password);
+        $message->payload = [
+            "actionType"        => "add",
+            "clientID"          => $id,
+            "DirectEntryInfo"   => [
+                "bsbNumber"         => $bsb,
+                "accountNumber"     => $number,
+                "accountName"       => $name,
+                "creditFlag"        => $credit
             ],
-            "MerchantInfo"  => [
-                "merchantID"        => "",
-                "password"          => "",
-            ],
-            "RequestType"   => "Periodic"
-        ]);
+            "amount"            => 10,
+            "periodicType"      => 4,
+        ];
+        $message_str = $message->toXML();
 
-        file_put_contents("LOG.txt", $message->saveXML());
+        // Creating header
+        $headers = [
+            "host: test.securepay.com.au",
+            "content-type: text/xml",
+            "content-length: " . strlen($message_str)
+        ];
+
+        // Declaring HTTPRequest object
+        $request = new HTTPRequest(SecurePay::$url_test, $headers, $message_str);
+
+        $request->POST();
+        file_put_contents("_LOG.txt", $message_str . "\n\n");
+
+        $doc = new \DOMDocument();
+        $doc->preserveWhiteSpace = false;
+        $doc->formatOutput = true;
+        $doc->loadXML($request->response);
+
+        file_put_contents("_LOG.txt", $doc->saveXML(), FILE_APPEND);
     }
 
 
