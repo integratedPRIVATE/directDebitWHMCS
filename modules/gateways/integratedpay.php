@@ -4,36 +4,15 @@ if (!defined("WHMCS")) {
     die("This file cannot be accessed directly");
 }
 
-include "integratedpay/debug.php";
+include "integratedpay/debug.php";              // Debugging helper functions
+
+// Using library classes
+use WHMCS\Module\Gateway\IntegratedPay\SecurePay;
 
 
 
-
-use WHMCS\User\Client;
-$client = Client::find(1);
-$methods = $client->payMethods;
-
-$funcs = get_class_methods($methods);
-$funcs_match = [];
-foreach($funcs as $func) {
-    if(strpos(strtolower($func), "pay") !== false) {
-        array_push($funcs_match, $func);
-    }
-}
-// var_dump($funcs);
-// var_dump(get_class_vars("WHMCS\Payment\PayMethod\Collection"));
-// var_dump($methods);
-
-// var_dump(\integratedpay\debug\find_functions("bank"));
-// var_dump(ReflectionFunction::export("getpaymethodbankdetails"));
-
-// var_dump(getpaymethodbankdetails($methods[0]));
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-/*                               WHMCS FUNCTIONALITY DECLARATIONS                                */
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/*                               WHMCS FUNCTIONALITY DECLARATIONS                                 */
 
 function integratedpay_MetaData()               // Module settings
 { return IntegratedPay::$metadata; }
@@ -45,13 +24,21 @@ function integratedpay_capture($params)         // Tells WHMCS we want to captur
 { return IntegratedPay::capture($params); }
 
 function integratedpay_localbankdetails(){}     // Adds a "Add Bank Account" option to pay methods
-function integratedpay_nolocalcc(){}
-function integratedpay_no_cc(){}
+function integratedpay_nolocalcc(){}            // Tells WH not to use a local credit card
+function integratedpay_no_cc(){}                // Tells WH not to use a remote credit card
+
+/**
+ * @NOTE: MATTHEW ALEXANDER 20/02/21-09:30
+ * Down the track I want to support credit card payments too, i'm hoping that WHMCS will support 
+ *  this, if not I will probably have to create a module called, 'integratedcard,' and 'integrated-
+ *  bank,' or something similar.
+ * For now however this will do. 
+ */
 
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-/*                                       WHMCS MODULE CODE                                       */
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/*                                       WHMCS MODULE CODE                                        */
 
 class IntegratedPay
 {
@@ -64,27 +51,35 @@ class IntegratedPay
         "gatewayType"   => "Bank"               // Must be "Bank", allows _capture to use bank
     ];
 
+
     /**
      * Gateway configuration options, presented to the administrator for configuring module
      */
     public static $config      = [
-        "FriendlyName"  => [
+        "FriendlyName"  => [                    // The name, needed for backwards compatibility
             "Type"          => "System",
             "Value"         => "Integrated Pay"
         ],
 
-        "merchantID"    => [
+        "merchantID"    => [                    // The ID of the merchant securepay will use
             "FriendlyName"  => "Merchant ID",
             "Type"          => "text",
             "Size"          => "7",
             "Default"       => ""
         ],
 
-        "password"      => [
+        "password"      => [                    // The password used for securepay authentication
             "FriendlyName"  => "Transaction Password",
             "Type"          => "text",
             "size"          => "35",
             "Default"       => ""
+        ],
+
+        "testMode"      => [                    // Wether we're running in test or production mode
+            "FriendlyName"  => "Test Mode",
+            "Type"          => "yesno",
+            "Description"   => "Tick to enable test mode",
+            "Default"       => "true"
         ]
     ];
 
@@ -94,7 +89,21 @@ class IntegratedPay
      */
     public static function capture(array $params): array
     {
-        $test = "";
+        // We start by getting the bank information
+        $bankname       = $params["bankname"];      // The name if the bank,    i.e 'ANZ'
+        $banktype       = $params["banktype"];      // The type of bank,        i.e 'Savings'
+        $bankcode       = $params["bankcode"];      // The routing code or BSB, i.e '012321'
+        $bankacct       = $params["bankacct"];      // The account number,      i.e '123478965'
+
+        // Now we need to get the properties from our config for securepay authentication
+        $merchantid     = $params["merchantID"];    // The user set merchant ID for securepay
+        $password       = $params["password"];      // The user set transaction password
+        $testmode       = $params["testMode"];      // Whether we're using the test url
+
+        $securepay = new SecurePay($merchantid, $password);
+        $securepay->store_directdebit("WILLPAID", $bankcode, $bankacct, $bankname, "no");
+
+        
 
         return [
             "status"    => "pending",
