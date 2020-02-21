@@ -5,113 +5,97 @@ use Exception;
 class SecurePayMessage
 {
     // Describes the structure of the message
-    private static $MessageInfo = [
+    public $messageInfo = [
         "messageID"         => "",
         "messageTimestamp"  => "",
         "timeoutValue"      => "60",
         "apiVersion"        => "spxml-3.0",
     ];
-    private static $MerchantInfo = [
+    public $merchantInfo = [
         "merchantID"        => "",
         "password"          => "",
     ];
-    private static $RequestType = "Periodic|addToken|lookupToken|Echo";
-    private static $Periodic = [
-        "PeriodicList"      => [
-            "PeriodicItem"      => [
-                "actionType"        => "add|delete|trigger",
-                "perioidicType"     => "1|2|3|4",
-                "clientID"          => "",
-            ]
-        ]
-    ];
-    private static $CreditCardInfo = [
-        "cardNumber"        => "",
-        "cvv"               => "",
-        "expiryDate"        => "",
-        "recurringFlag"     => "yes|no"
-    ];
-    private static $DirectEntryInfo = [
-        "bsbNumber"         => "",
-        "accountNumber"     => "",
-        "accountName"       => "",
-        "creditFlag"        => "yes|no"
-    ];
-
-
-    // Member variables, set properties on them to change how the message behaves
-    public $messageInfo     = [];
-    public $merchantInfo    = [];
-    public $requestType     = "";
-    public $item            = [];
+    public $requestType = "Periodic|addToken|lookupToken|Echo";
+    public $payload = [];
 
 
     function __construct(string $requestType, string $merchantID, string $password)
     {
         // Checking request type is valid
-        if(!(in_array($requestType, explode("|", SecurePayMessage::$RequestType)))) {
+        if(!(in_array($requestType, explode("|", $this->requestType)))) {
             throw new \Exception("Error, invalid request type '$requestType'.");
         }
 
-        // Constructing messageinfo
-        $messageInfo = SecurePayMessage::$MessageInfo;
-        $messageInfo["messageID"]           = $this->get_uuid();
-        $messageInfo["messageTimestamp"]    = $this->get_timestamp();
-        $this->messageInfo                  = $messageInfo;
-
-        // Constructing merchantinfo    
-        $merchantInfo = SecurePayMessage::$MerchantInfo;
-        $merchantInfo["merchantID"]         = $merchantID;
-        $merchantInfo["password"]           = $password;
-        $this->merchantinfo                 = $merchantInfo;
-
-        // Setting request type
+        // Setting message properties
+        $this->messageInfo["messageID"]         = $this->get_uuid();
+        $this->messageInfo["messageTimestamp"]  = $this->get_timestamp();
+        $this->merchantInfo["merchantID"]       = $merchantID;
+        $this->merchantInfo["password"]         = $password;
         $this->requestType = $requestType;
-
-        // Creating list based on request type
-        if($requestType === "Periodic") {
-            $this->periodic = SecurePayMessage::$Periodic;
-        }
     }
 
-    
-    public function to_xml()
+
+    public function toXML()
     {
+        $list = [
+            "MessageInfo"   => $this->messageInfo,
+            "MerchantInfo"  => $this->merchantInfo,
+            "RequestType"   => $this->requestType
+        ];
+        if($this->requestType === "Periodic") {
+            $list["Periodic"] = [
+                "PeriodicList"  => [
+                    "@count"        => "1",
+                    "PeriodicItem"  => array_merge($this->payload, ["@ID"=>"1"])
+                ]
+            ];
+        }
+
         // Creating DOM object and setting it's properties for human readability
         $doc = new \DOMDocument();
         $doc->preserveWhiteSpace = false;
         $doc->formatOutput = true;
-        $doc->loadXML('<?xml version="1.0" encoding="UTF-8>');
+        $doc->loadXML('<?xml version="1.0" encoding="UTF-8" ?><SecurePayMessage></SecurePayMessage>');
 
-        // Creating XML elements
-        $root = $doc->createElement("SecurePayMessage");
-        $messageinfo = $doc->createElement("MessageInfo");
-        $merchantinfo = $doc->createElement("MerchantInfo");
-        $requesttype = $doc->createElement("RequestType", $this->requestType);
+        $stack = [[                             // Declaring stack for breadth first recursion
+            "parent"    => $doc->appendChild($doc->firstChild),
+            "children"  => $list
+        ]];
 
-        SecurePayMessage::list_to_xml($doc, $messageinfo, $this->messageInfo);
-        $root->appendChild($messageinfo);
-        $doc->appendChild($root);
-        file_put_contents("LOG.txt", $doc->saveXML());
-    }
+        while(true) {
+            $item = array_shift($stack);
+            $pare = $item["parent"];
+            $chil = $item["children"];
 
-    
+            // Looping through each child
+            foreach($chil as $key => $value) {
+                if(substr($key, 0, 1) === "@") {
+                    $pare->setAttribute(substr($key, 1), $value);
+                    continue;
+                }
 
-    private static function list_to_xml(\DOMDocument $doc, \DOMElement $parent, array $list)
-    {
-        foreach($list as $key => $value) {      // For each entry in list
-            $item = $doc->createElement($key);  // Creating element
+                $node = $pare->appendChild($doc->createElement($key));
 
-            if(gettype($value) === "array") {   // If the item has children
-                SecurePayMessage::list_to_xml($doc, $item, $value);
+                // Setting node value if it doesn't have children
+                if(gettype($value) !== "array") {
+                    $node->nodeValue = $value;
+                    continue;
+                }
+
+                // Adding to the stack if the node has children
+                array_push($stack, [
+                    "parent"    => $node,
+                    "children"  => $value
+                ]);
             }
-            else {                              // If it doesn't
-                $item->nodeValue = $value;
-            }
 
-            $parent->appendChild($item);        // Append it to the parent
+            // Checking if we've reached the end of the stack
+            if(count($stack) < 1) {break;}
         }
+
+        return $doc->saveXML();
     }
+
 
 
     /**

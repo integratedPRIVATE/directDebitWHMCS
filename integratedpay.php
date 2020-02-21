@@ -101,7 +101,7 @@ class IntegratedPay
         $testmode       = $params["testMode"];      // Whether we're using the test url
 
         $securepay = new SecurePay($merchantid, $password);
-        $securepay->store_directdebit("WILLPAID", $bankcode, $bankacct, $bankname, "no");
+        $securepay->store_directdebit("WillBoop", $bankcode, $bankacct, $bankname, "no");
 
         
 
