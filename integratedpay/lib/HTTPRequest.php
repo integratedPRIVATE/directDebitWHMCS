@@ -41,6 +41,20 @@ class HTTPRequest
     }
 
 
+    /**
+     * Returns the response as an DOMDocument function
+     */
+    public function response_as_xml(): \DOMDOcument
+    {
+        $doc = new \DOMDocument();
+        $doc->preserveWhiteSpace = false;
+        $doc->formatOutput = true;
+        $doc->loadXML($this->response);
+
+        return $doc;
+    }
+
+
     public function POST() { $this->curl("POST"); }
 
     public function GET() { $this->curl("GET"); }

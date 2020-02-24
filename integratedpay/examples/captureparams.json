@@ -182,23 +182,13 @@
         "language": "",
         "isOptedInToMarketingEmails": false,
         "lastlogin": "No Login Logged",
-        "customfields1": "ANZ",
+        "customfields1": "BOOP0001",
         "customfields": [
             {
-                "id": 1,
-                "value": "ANZ"
-            },
-            {
-                "id": 2,
-                "value": "014514"
-            },
-            {
-                "id": 3,
-                "value": "230397138"
+                "id": 4,
+                "value": "BOOP0001"
             }
-        ],
-        "customfields2": "014514",
-        "customfields3": "230397138"
+        ]
     },
     "gatewayid": "",
     "currency": "AUD",
@@ -208,10 +198,10 @@
     "cardexp": "",
     "cardstart": "",
     "cardissuenum": "",
-    "bankname": "ahrhgergef",
+    "bankname": "ANZ",
     "banktype": "Savings",
-    "bankcode": "61681",
-    "bankacct": "3546846810",
+    "bankcode": "000111",
+    "bankacct": "123478965",
     "disableautocc": false,
     "payMethod": {
         "id": 20,
@@ -277,11 +267,11 @@
         "payment": {
             "id": 19,
             "pay_method_id": 20,
-            "bank_name": "ahrhgergef",
+            "bank_name": "ANZ",
             "acct_type": "Savings",
-            "bank_data": "a9361ea9843f3072ef9c680424b331d192cfec453b8a40c9f7bfb43e9d5e96c4ab0e3fd7aa43b9d0f3d0b13be533fae9f95c5ead2f2dbb93f3ffbec7f447b983b4b2efa17fd3dec9ef612a1cde857ddb65949312aa60331ef8aa2acf2933b39c",
+            "bank_data": "a9361ea9843f3072ef9c680424b331d11fadddba57c66c253f5ce739c7b4d6154948f46089b40ab82f896d9009747c8e56cb52dcc3abf7842b74db1e6f5a7ab67c5a4ab5fb1a9d15f4ed2050ecbeec49681b80511c0225e7df222dc62af47099",
             "created_at": "2020-02-20 07:03:39",
-            "updated_at": "2020-02-20 07:03:39",
+            "updated_at": "2020-02-21 05:33:53",
             "deleted_at": null,
             "pay_method": {
                 "id": 20,
