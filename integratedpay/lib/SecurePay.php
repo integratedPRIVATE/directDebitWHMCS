@@ -2,12 +2,10 @@
 
 // Using library classes
 
-include "integratedpay/debug.php";              // Debugging helper functions
-
 use Exception;
 use WHMCS\Module\Gateway\IntegratedPay\HTTPRequest;
 use WHMCS\Module\Gateway\IntegratedPay\SecurePayMessage;
-use integratedpay\debug\Log;
+use WHMCS\Module\Gateway\IntegratedPay\Log;
 
 
 class SecurePay
@@ -160,7 +158,7 @@ class SecurePay
         }
 
         // @DEBUG
-        Log::append($message, null, "MESSAGE SENT TO SECUREPAY");
+        Log::append($message, null, "Message Sent to SecurePay");
         
         return $response;
     }
