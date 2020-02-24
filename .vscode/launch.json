@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/run.php",
             "cwd": "${workspaceFolder}/",
-            "port": 9000
+            "port": 9001
         }
     ]
 }
