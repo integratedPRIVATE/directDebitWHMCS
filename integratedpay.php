@@ -4,11 +4,10 @@ if (!defined("WHMCS")) {
     die("This file cannot be accessed directly");
 }
 
-include "integratedpay/debug.php";              // Debugging helper functions
 
 // Using library classes
 use WHMCS\Module\Gateway\IntegratedPay\SecurePay;
-use integratedpay\debug\Log;
+use WHMCS\Module\Gateway\IntegratedPay\Log;
 
 
 
@@ -127,6 +126,8 @@ class IntegratedPay
         $securepay = new SecurePay($merchantid, $password, $testmode === "on" ? false : true);
         $response = $securepay->store_directdebit(
             $payorID, $bankcode, $bankacct, $bankname, $credit, $amount );
+        
+        Log::append($response, Log::$JSON, "Storing Bank Response");
             
         // Getting the information from the response
         $periodicItem = $response["Periodic"]["PeriodicList"]["PeriodicItem"];
@@ -154,6 +155,8 @@ class IntegratedPay
                 $payorID, $bankcode, $bankacct, $bankname, $credit
             );
 
+            Log::append($response, Log::$JSON, "Edit Bank Response");
+
             // Getting information from the response
             $periodicItem = $response["Periodic"]["PeriodicList"]["PeriodicItem"];
             $responsecode = $periodicItem["responseCode"];
@@ -172,16 +175,13 @@ class IntegratedPay
 
         // Triggering the actual payment
         $response = $securepay->trigger_payment($payorID, $transref, $amount);
+
+        Log::append($response, Log::$JSON, "Payment Response");
         
         // Getting information from response
         $periodicItem = $response["Periodic"]["PeriodicList"]["PeriodicItem"];
         $responsecode = $periodicItem["responseCode"];
         $responsetext = $periodicItem["responseText"];
-
-        // @DEBUG
-        Log::append($response, LOG_JSON, "Storing Bank Response");
-        Log::append($response, LOG_JSON, "Payment Response");
-
 
         // If the payment did not go through, fail
         if($responsecode !== "00") {
