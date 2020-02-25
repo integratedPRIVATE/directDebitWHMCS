@@ -1,7 +1,7 @@
 <?php
 
-include "integratedpay/lib/HTTPRequest.php";
-include "integratedpay/lib/SecurePay.php";
+include "../integratedpay/lib/HTTPRequest.php";
+include "../integratedpay/lib/SecurePay.php";
 
 use WHMCS\Module\Gateway\IntegratedPay\HTTPRequest;
 use WHMCS\Module\Gateway\IntegratedPay\SecurePay;
